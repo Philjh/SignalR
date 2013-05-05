@@ -48,7 +48,6 @@
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj"></CoreProjects>
 
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj"></CoreProjects>
-    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj"></CoreProjects>
 
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"></CoreProjects>
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"></CoreProjects>
