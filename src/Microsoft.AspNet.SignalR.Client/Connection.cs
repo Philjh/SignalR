@@ -566,7 +566,11 @@ namespace Microsoft.AspNet.SignalR.Client
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionHasNotBeenEstablished));
             }
 
-            return _transport.Send(this, data);
+            var retVal = _transport.Send(this, data);
+
+            retVal.ContinueWith((task) => { ConnectionTrace("{0}", "Connection Send completed"); });
+
+            return retVal;
         }
 
         /// <summary>

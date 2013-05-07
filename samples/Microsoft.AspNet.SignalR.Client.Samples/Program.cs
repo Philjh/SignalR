@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 #if !NET35
             // RunInMemoryHost();
 #endif
-
             //var hubConnection = new HubConnection("http://localhost:40476/");
 
             // RunDemoHub(hubConnection);
