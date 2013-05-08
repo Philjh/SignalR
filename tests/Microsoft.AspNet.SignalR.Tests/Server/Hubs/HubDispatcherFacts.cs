@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
 
             // Act
             var context = new HostContext(request.Object, response.Object);
-            dispatcher.Initialize(new DefaultDependencyResolver(), context);
+            dispatcher.Initialize(new DefaultDependencyResolver());
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert

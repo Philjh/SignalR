@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             transport.OutputWriter.WriteLine();
             transport.OutputWriter.Flush();
 
-            return transport.Context.Response.Flush();
+            return transport.Context.OwinResponse.Body.FlushAsync();
         }
 
         private static Task PerformSend(object state)
@@ -63,12 +63,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             context.Transport.OutputWriter.WriteLine();
             context.Transport.OutputWriter.Flush();
 
-            return context.Transport.Context.Response.Flush();
+            return context.Transport.Context.OwinResponse.Body.FlushAsync();
         }
 
         private static Task WriteInit(ServerSentEventsTransport transport)
         {
-            transport.Context.Response.ContentType = "text/event-stream";
+            transport.Context.OwinResponse.SetContentType("text/event-stream");
 
             // "data: initialized\n\n"
             transport.OutputWriter.Write("data: initialized");
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             transport.OutputWriter.WriteLine();
             transport.OutputWriter.Flush();
 
-            return transport.Context.Response.Flush();
+            return transport.Context.OwinResponse.Body.FlushAsync();
         }
 
         private class SendContext

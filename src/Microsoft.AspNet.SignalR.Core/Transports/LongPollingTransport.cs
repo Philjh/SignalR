@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -159,16 +160,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             return EnqueueOperation(state => PerformSend(state), context);
         }
 
-        private Task ProcessSendRequest()
+        private async Task ProcessSendRequest()
         {
-            string data = Context.Request.Form["data"] ?? Context.Request.QueryString["data"];
+            NameValueCollection form = await Context.OwinRequest.ReadForm();
+
+            string data = form["data"] ?? Context.Request.QueryString["data"];
 
             if (Received != null)
             {
-                return Received(data);
+                await Received(data);
             }
-
-            return TaskAsyncHelper.Empty;
         }
 
         private Task ProcessReceiveRequest(ITransportConnection connection)
@@ -306,7 +307,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            context.Transport.Context.Response.ContentType = context.Transport.IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType;
+            string contentType = context.Transport.IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType;
+            context.Transport.Context.OwinResponse.SetContentType(contentType);
 
             if (context.Transport.IsJsonp)
             {
@@ -323,7 +325,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             context.Transport.OutputWriter.Flush();
 
-            return context.Transport.Context.Response.End();
+            return TaskAsyncHelper.Empty;
         }
 
         private static void OnError(AggregateException ex, object state)

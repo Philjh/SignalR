@@ -71,16 +71,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
-        public override void Initialize(IDependencyResolver resolver, HostContext context)
+        public override void Initialize(IDependencyResolver resolver)
         {
             if (resolver == null)
             {
                 throw new ArgumentNullException("resolver");
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
             }
 
             _proxyGenerator = _enableJavaScriptProxies ? resolver.Resolve<IJavaScriptProxyGenerator>()
@@ -93,13 +88,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
             _counters = resolver.Resolve<IPerformanceCounterManager>();
 
-            base.Initialize(resolver, context);
+            base.Initialize(resolver);
         }
 
         protected override bool AuthorizeRequest(IRequest request)
         {
             // Populate _hubs
-            string data = request.QueryStringOrForm("connectionData");
+            string data = request.QueryString["connectionData"];
 
             if (!String.IsNullOrEmpty(data))
             {
@@ -248,11 +243,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 string hubUrl = normalized.Substring(0, normalized.Length - suffixLength);
 
                 // Generate the proxy
-                context.Response.ContentType = JsonUtility.JavaScriptMimeType;
-                return context.Response.End(_proxyGenerator.GenerateProxy(hubUrl));
+                context.OwinResponse.SetContentType(JsonUtility.JavaScriptMimeType);
+
+                return context.OwinResponse.Write(_proxyGenerator.GenerateProxy(hubUrl));
             }
 
-            _isDebuggingEnabled = context.IsDebuggingEnabled();
+            _isDebuggingEnabled = context.Environment.IsDebugEnabled();
 
             return base.ProcessRequest(context);
         }

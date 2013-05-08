@@ -15,6 +15,7 @@ using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
+using Microsoft.Owin;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR
@@ -32,16 +33,11 @@ namespace Microsoft.AspNet.SignalR
         private bool _initialized;
         private IServerCommandHandler _serverMessageHandler;
 
-        public virtual void Initialize(IDependencyResolver resolver, HostContext context)
+        public virtual void Initialize(IDependencyResolver resolver)
         {
             if (resolver == null)
             {
                 throw new ArgumentNullException("resolver");
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
             }
 
             if (_initialized)
@@ -130,6 +126,36 @@ namespace Microsoft.AspNet.SignalR
             {
                 return PrefixHelper.PersistentConnectionGroupPrefix;
             }
+        }
+
+        /// <summary>
+        /// OWIN entry point.
+        /// </summary>
+        /// <param name="environment"></param>
+        /// <returns></returns>
+        public Task ProcessRequest(IDictionary<string, object> environment)
+        {
+            var context = new HostContext(environment);
+
+            // Disable request compression and buffering on IIS
+            context.DisableRequestCompression();
+            context.DisableResponseBuffering();
+
+            var response = new OwinResponse(environment);
+
+            // Add the nosniff header for all responses to prevent IE from trying to sniff mime type from contents
+            response.SetHeader("X-Content-Type-Options", "nosniff");
+
+            if (Authorize(context.Request))
+            {
+                return ProcessRequest(context);
+            }
+
+            // If we failed to authorize the request then return a 403 since the request
+            // can't do anything
+            response.StatusCode = 403;
+
+            return TaskAsyncHelper.Empty;
         }
 
         /// <summary>
@@ -430,8 +456,9 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessJsonpRequest(context, payload);
             }
 
-            context.Response.ContentType = JsonUtility.JsonMimeType;
-            return context.Response.End(JsonSerializer.Stringify(payload));
+            context.OwinResponse.SetContentType(JsonUtility.JsonMimeType);
+
+            return context.OwinResponse.Write(JsonSerializer.Stringify(payload));
         }
 
         private Task ProcessNegotiationRequest(HostContext context)
@@ -448,8 +475,7 @@ namespace Microsoft.AspNet.SignalR
                 ConnectionId = connectionId,
                 KeepAliveTimeout = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
-                TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
-                WebSocketServerUrl = context.WebSocketServerUrl(),
+                TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.Environment.SupportsWebSockets(),
                 ProtocolVersion = "1.2"
             };
 
@@ -458,8 +484,9 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessJsonpRequest(context, payload);
             }
 
-            context.Response.ContentType = JsonUtility.JsonMimeType;
-            return context.Response.End(JsonSerializer.Stringify(payload));
+            context.OwinResponse.SetContentType(JsonUtility.JsonMimeType);
+
+            return context.OwinResponse.Write(JsonSerializer.Stringify(payload));
         }
 
         private static string GetUserIdentity(HostContext context)
@@ -473,10 +500,11 @@ namespace Microsoft.AspNet.SignalR
 
         private Task ProcessJsonpRequest(HostContext context, object payload)
         {
-            context.Response.ContentType = JsonUtility.JavaScriptMimeType;
+            context.OwinResponse.SetContentType(JsonUtility.JavaScriptMimeType);
+
             var data = JsonUtility.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));
 
-            return context.Response.End(data);
+            return context.OwinResponse.Write(data);
         }
 
         private static bool IsNegotiationRequest(IRequest request)

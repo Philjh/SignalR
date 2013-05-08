@@ -110,7 +110,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual CancellationToken CancellationToken
         {
-            get { return _context.Response.CancellationToken; }
+            get
+            {
+                // REVIEW: OwinResponse needs to add this
+                return _context.Environment.Get<CancellationToken>(OwinConstants.CallCancelled);
+            }
         }
 
         public virtual bool IsAlive
@@ -186,7 +190,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual TextWriter CreateResponseWriter()
         {
-            return new BufferTextWriter(Context.Response);
+            return new BufferTextWriter(Context.OwinResponse);
         }
 
         protected void IncrementErrors()
@@ -305,7 +309,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual void InitializePersistentState()
         {
-            _hostShutdownToken = _context.HostShutdownToken();
+            _hostShutdownToken = _context.Environment.GetShutdownToken();
 
             _requestLifeTime = new HttpRequestLifeTime(this, WriteQueue, Trace, ConnectionId);
 

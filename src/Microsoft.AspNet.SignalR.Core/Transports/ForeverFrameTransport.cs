@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
+using Microsoft.Owin;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -54,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (_htmlOutputWriter == null)
                 {
-                    _htmlOutputWriter = new HTMLTextWriter(Context.Response);
+                    _htmlOutputWriter = new HTMLTextWriter(Context.OwinResponse);
                     _htmlOutputWriter.NewLine = "\n";
                 }
 
@@ -115,12 +116,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private static Task WriteInit(ForeverFrameTransportContext context)
         {
-            context.Transport.Context.Response.ContentType = "text/html; charset=UTF-8";
+            context.Transport.Context.OwinResponse.SetContentType("text/html; charset=UTF-8");
 
             context.Transport.HTMLOutputWriter.WriteRaw((string)context.State);
             context.Transport.HTMLOutputWriter.Flush();
 
-            return context.Transport.Context.Response.Flush();
+            return context.Transport.Context.OwinResponse.Body.FlushAsync();
         }
 
         private static Task PerformSend(object state)
@@ -132,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             context.Transport.HTMLOutputWriter.WriteRaw(");</script>\r\n");
             context.Transport.HTMLOutputWriter.Flush();
 
-            return context.Transport.Context.Response.Flush();
+            return context.Transport.Context.OwinResponse.Body.FlushAsync();
         }
 
         private static Task PerformKeepAlive(object state)
@@ -144,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             transport.HTMLOutputWriter.WriteLine();
             transport.HTMLOutputWriter.Flush();
 
-            return transport.Context.Response.Flush();
+            return transport.Context.OwinResponse.Body.FlushAsync();
         }
 
         private class ForeverFrameTransportContext
@@ -161,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private class HTMLTextWriter : BufferTextWriter
         {
-            public HTMLTextWriter(IResponse response)
+            public HTMLTextWriter(OwinResponse response)
                 : base(response)
             {
             }

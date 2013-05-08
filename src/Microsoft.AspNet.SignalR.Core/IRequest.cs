@@ -29,11 +29,6 @@ namespace Microsoft.AspNet.SignalR
         NameValueCollection Headers { get; }
 
         /// <summary>
-        /// Gets the form for this request.
-        /// </summary>
-        NameValueCollection Form { get; }
-
-        /// <summary>
         /// Gets the cookies for this request.
         /// </summary>
         IDictionary<string, Cookie> Cookies { get; }
@@ -44,8 +39,8 @@ namespace Microsoft.AspNet.SignalR
         IPrincipal User { get; }
 
         /// <summary>
-        /// Gets state for the current HTTP request.
+        /// Gets the owin enviornment
         /// </summary>
-        IDictionary<string, object> Items { get; }
+        IDictionary<string, object> Environment { get; }
     }
 }

@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.Owin;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
@@ -24,8 +25,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private ChunkedWriter _writer;
         private int _bufferSize;
 
-        public BufferTextWriter(IResponse response) :
-            this((data, state) => ((IResponse)state).Write(data), response, reuseBuffers: true, bufferSize: 128)
+        public BufferTextWriter(OwinResponse response) :
+            this((data, state) => ((OwinResponse)state).Body.Write(data.Array, data.Offset, data.Count), response, reuseBuffers: true, bufferSize: 128)
         {
 
         }
