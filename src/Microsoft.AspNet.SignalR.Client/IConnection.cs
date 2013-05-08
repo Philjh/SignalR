@@ -30,12 +30,12 @@ namespace Microsoft.AspNet.SignalR.Client
         ConnectionState State { get; }
         IClientTransport Transport { get; }
 
-#if !SILVERLIGHT
+//#if !SILVERLIGHT
         /// <summary>
         /// Gets of sets proxy information for the connection.
         /// </summary>
         IWebProxy Proxy { get; set; }
-#endif
+//#endif
 
 #if (NET4 || NET45)
         X509CertificateCollection Certificates { get; }

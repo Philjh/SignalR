@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System.Net.Http;
-#if !NETFX_CORE
+#if !PORTABLE
 using System.Security.Cryptography.X509Certificates;
 #endif
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
-#if !NETFX_CORE && !SILVERLIGHT && !__ANDROID__ && !IOS
+#if !PORTABLE && !__ANDROID__ && !IOS
     public class DefaultHttpHandler : WebRequestHandler
 #else
     public class DefaultHttpHandler : HttpClientHandler
@@ -26,12 +26,12 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 CookieContainer = _connection.CookieContainer;
             }
 
-#if !SILVERLIGHT
+//#if !SILVERLIGHT
             if (Proxy != null)
             {
                 Proxy = Proxy;
             }
-#endif
+//#endif
 
 #if (NET4 || NET45)
             foreach (X509Certificate cert in _connection.Certificates)

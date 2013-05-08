@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.SignalR
         private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception)
         {
             // observe Exception
-#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE && !__ANDROID__ && !IOS
+#if !PORTABLE && !__ANDROID__ && !IOS
             Trace.TraceError("SignalR exception thrown by Task: {0}", exception);
 #endif
             handler(exception, state);
@@ -640,9 +640,9 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Delay(TimeSpan timeOut)
         {
-#if NETFX_CORE
-            return Task.Delay(timeOut);
-#else
+//#if NETFX_CORE
+//            return Task.Delay(timeOut);
+//#else
             var tcs = new TaskCompletionSource<object>();
 
             var timer = new Timer(tcs.SetResult,
@@ -655,7 +655,7 @@ namespace Microsoft.AspNet.SignalR
                 timer.Dispose();
             },
             TaskContinuationOptions.ExecuteSynchronously);
-#endif
+//#endif
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
