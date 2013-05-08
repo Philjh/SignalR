@@ -85,6 +85,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 ExtractMessages(mapping, items, ref totalCount);
 
+                if (EventKeys.Count > 1)
+                {
+                    _streams[streamIndex].Trace("{0}: ExtractMessages({1})", Identity, mapping.Id);
+                }
+
                 // Update the cursor id
                 nextCursors[streamIndex] = mapping;
             }
